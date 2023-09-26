@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { el } from 'element-plus/es/locale'
+import { HttpsProxyAgent } from 'https-proxy-agent'
 
 export const openai = (config: {
   link?: string
@@ -8,31 +8,32 @@ export const openai = (config: {
   prompt: string
   content: string
   timeout?: number
+  proxy?: string
 }) => {
-  const apiLink = config.link || 'https://api.openai.com/v1/engines'
-  const delay = config.timeout || 15000
-  const data = {
-    model: config.model || 'gpt-3.5-turbo',
-    messages: [
-      {
-        role: 'system',
-        content: config.prompt
-      },
-      {
-        role: 'user',
-        content: config.content
-      }
-    ]
-  }
-
+  const http_proxy = config.proxy || process.env.http_proxy || process.env.https_proxy
   return axios.request({
     headers: {
       Authorization: 'Bearer ' + config.key,
       'Content-Type': 'application/json'
     },
-    url: apiLink,
-    data: data,
+    url: config.link || 'https://api.openai.com/v1/chat/completions',
+    data: {
+      model: config.model || 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: config.prompt
+        },
+        {
+          role: 'user',
+          content: config.content
+        }
+      ]
+    },
     method: 'post',
-    timeout: delay
+    timeout: config.timeout || 15000,
+    httpAgent: http_proxy ? new HttpsProxyAgent(http_proxy) : undefined,
+    httpsAgent: http_proxy ? new HttpsProxyAgent(http_proxy) : undefined,
+    proxy: http_proxy ? false : undefined
   })
 }

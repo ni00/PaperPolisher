@@ -15,6 +15,7 @@ declare global {
         prompt: string
         content: string
         timeout?: number
+        proxy?: string
       }) => any
       prompt: {
         zh: Record<string, string>

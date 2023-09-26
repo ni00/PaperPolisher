@@ -15,7 +15,8 @@ const env = ref(
     key: 'sk-xxx',
     model: 'gpt-3.5-turbo',
     timeout: 15000,
-    stream: false
+    stream: false,
+    proxy: ''
   }
 )
 const btns = [
@@ -193,11 +194,14 @@ const handleSend = async (currentPrompt: string, event: string) => {
           <el-option label="gpt-4" value="gpt-4" />
         </el-select>
       </el-form-item>
+      <el-form-item label="stream 请求" label-width="90">
+        <el-switch v-model="env.stream" active-text="开启" inactive-text="关闭" />
+      </el-form-item>
       <el-form-item label="超时(ms)" label-width="90">
         <el-input v-model.number="env.timeout" autocomplete="off" placeholder="15000" />
       </el-form-item>
-      <el-form-item label="stream 请求" label-width="90">
-        <el-switch v-model="env.stream" active-text="开启" inactive-text="关闭" />
+      <el-form-item label="代理端口" label-width="90">
+        <el-input v-model="env.proxy" autocomplete="off" placeholder="http://127.0.0.1:xxxx" />
       </el-form-item>
     </el-form>
     <template #footer>
