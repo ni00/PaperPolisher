@@ -1,29 +1,38 @@
 import axios from 'axios'
+import { el } from 'element-plus/es/locale'
 
-export const openai = (
-  apiUrl: string,
-  apiKey: string,
-  model: string,
-  prompt: string,
+export const openai = (config: {
+  link?: string
+  key: string
+  model?: string
+  prompt: string
   content: string
-) => {
-  const client = axios.create({
-    headers: {
-      Authorization: 'Bearer ' + apiKey
-    }
-  })
-  const params = {
-    model: model,
+  timeout?: number
+}) => {
+  const apiLink = config.link || 'https://api.openai.com/v1/engines'
+  const delay = config.timeout || 15000
+  const data = {
+    model: config.model || 'gpt-3.5-turbo',
     messages: [
       {
         role: 'system',
-        content: prompt
+        content: config.prompt
       },
       {
         role: 'user',
-        content: content
+        content: config.content
       }
     ]
   }
-  return client.post(apiUrl, params)
+
+  return axios.request({
+    headers: {
+      Authorization: 'Bearer ' + config.key,
+      'Content-Type': 'application/json'
+    },
+    url: apiLink,
+    data: data,
+    method: 'post',
+    timeout: delay
+  })
 }

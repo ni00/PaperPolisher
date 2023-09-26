@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* remove el-button raw style */
+.el-button + .el-button {
+  margin-left: 0;
+}

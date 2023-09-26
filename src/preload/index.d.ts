@@ -8,13 +8,14 @@ declare global {
       saveFile: (text: string) => Promise<string>
       pasteText: () => Promise<string>
       copyText: (text: string) => Promise<string>
-      sendToOpenAI: (
-        apiUrl: string,
-        apiKey: string,
-        model: string,
-        prompt: string,
+      sendToOpenAI: (config: {
+        link?: string
+        key: string
+        model?: string
+        prompt: string
         content: string
-      ) => any
+        timeout?: number
+      }) => any
       prompt: {
         zh: Record<string, string>
         en: Record<string, string>

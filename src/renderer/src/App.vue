@@ -11,9 +11,11 @@ const dialogVisible = ref(false)
 const prompt = computed(() => window.api.prompt.zh)
 const env = ref(
   JSON.parse(localStorage.getItem('env')) || {
-    api: 'https://api.openai.com/v1/chat/completions',
+    link: 'https://api.openai.com/v1/chat/completions',
     key: 'sk-xxx',
-    model: 'gpt-3.5-turbo'
+    model: 'gpt-3.5-turbo',
+    timeout: 15000,
+    stream: false
   }
 )
 const btns = [
@@ -93,27 +95,36 @@ const handleEnv = () => {
 }
 
 const loading = ref(false)
-const handleSend = (p: string, t: string) => {
+const handleChunk = (chunks: string) => {
+  return chunks
+    .split('\n')
+    .filter((item) => item.includes('content'))
+    .map((item) => {
+      const j = JSON.parse(item.slice(5))
+      return j.choices[0].delta.content
+    })
+    .join('')
+}
+const handleSend = async (currentPrompt: string, event: string) => {
   loading.value = true
-  window.api
-    .sendToOpenAI(
-      env.value.api || 'https://api.openai.com/v1/chat/completions',
-      env.value.key,
-      env.value.model,
-      p,
-      beforeText.value
-    )
-    .then((res) => {
-      afterText.value = res.data.choices[0].message.content || ''
-      successMsg(t)
+  try {
+    const response = await window.api.sendToOpenAI({
+      ...env.value,
+      prompt: currentPrompt,
+      content: beforeText.value
     })
-    .catch((e) => {
-      console.log(e)
-      warningMsg(t)
-    })
-    .finally(() => {
-      loading.value = false
-    })
+    if (env.value.stream) {
+      afterText.value = handleChunk(response.data) || ''
+    } else {
+      afterText.value = response.data.choices[0].message.content || ''
+    }
+    successMsg(event)
+  } catch (e) {
+    console.log(e)
+    warningMsg(event)
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
@@ -166,21 +177,27 @@ const handleSend = (p: string, t: string) => {
   </div>
   <el-dialog v-model="dialogVisible" title="设置">
     <el-form :model="env">
-      <el-form-item label="API 地址" label-width="80">
+      <el-form-item label="API 地址" label-width="90">
         <el-input
-          v-model="env.api"
+          v-model="env.link"
           autocomplete="off"
           placeholder="https://api.openai.com/v1/chat/completions"
         />
       </el-form-item>
-      <el-form-item label="API 密钥" label-width="80">
+      <el-form-item label="API 密钥" label-width="90">
         <el-input v-model="env.key" autocomplete="off" placeholder="sk-xxx" />
       </el-form-item>
-      <el-form-item label="LLM 模型" label-width="80">
+      <el-form-item label="LLM 类型" label-width="90">
         <el-select v-model="env.model" placeholder="请选择模型">
           <el-option label="gpt-3.5-turbo" value="gpt-3.5-turbo" />
           <el-option label="gpt-4" value="gpt-4" />
         </el-select>
+      </el-form-item>
+      <el-form-item label="超时(ms)" label-width="90">
+        <el-input v-model.number="env.timeout" autocomplete="off" placeholder="15000" />
+      </el-form-item>
+      <el-form-item label="stream 请求" label-width="90">
+        <el-switch v-model="env.stream" active-text="开启" inactive-text="关闭" />
       </el-form-item>
     </el-form>
     <template #footer>
@@ -191,9 +208,3 @@ const handleSend = (p: string, t: string) => {
     </template>
   </el-dialog>
 </template>
-
-<style lang="less">
-.el-button + .el-button {
-  margin-left: 0;
-}
-</style>
