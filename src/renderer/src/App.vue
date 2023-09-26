@@ -45,14 +45,25 @@ const successMsg = (text: string) => {
 const warningMsg = (text: string) => {
   ElMessage({
     message: `${text}失败!`,
+    type: 'error'
+  })
+}
+const emptyMag = (text: string) => {
+  ElMessage({
+    message: `${text}为空!`,
     type: 'warning'
   })
 }
 
 const handleImport = async () => {
   try {
-    beforeText.value = await window.api.openFile()
-    successMsg('导入')
+    const text = await window.api.openFile()
+    if (text) {
+      beforeText.value = text
+      successMsg('导入')
+    } else {
+      emptyMag('导入')
+    }
   } catch (e) {
     warningMsg('导入')
   }
@@ -60,8 +71,13 @@ const handleImport = async () => {
 
 const handlePaste = async () => {
   try {
-    beforeText.value = beforeText.value + (await window.api.pasteText())
-    successMsg('粘贴')
+    const text = await window.api.pasteText()
+    if (text) {
+      beforeText.value = beforeText.value + text
+      successMsg('粘贴')
+    } else {
+      emptyMag('粘贴')
+    }
   } catch (e) {
     warningMsg('粘贴')
   }
@@ -69,8 +85,13 @@ const handlePaste = async () => {
 
 const handleSave = async () => {
   try {
-    await window.api.saveFile(afterText.value)
-    successMsg('导出')
+    const text = afterText.value
+    if (text) {
+      await window.api.saveFile(text)
+      successMsg('导出')
+    } else {
+      emptyMag('导出')
+    }
   } catch (e) {
     warningMsg('导出')
   }
@@ -78,8 +99,13 @@ const handleSave = async () => {
 
 const handleCopy = async () => {
   try {
-    await window.api.copyText(afterText.value)
-    successMsg('复制')
+    const text = afterText.value
+    if (text) {
+      await window.api.copyText(text)
+      successMsg('复制')
+    } else {
+      emptyMag('复制')
+    }
   } catch (e) {
     warningMsg('复制')
   }
