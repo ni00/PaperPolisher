@@ -1,6 +1,6 @@
 {
   "name": "paper-polisher",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "PaperPolisher: A Paper Refinement Instrument Based on Latent Language Models.",
   "main": "./out/main/index.js",
   "author": "nixiaobai",
