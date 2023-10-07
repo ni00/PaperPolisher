@@ -8,7 +8,9 @@ const beforeText = ref('')
 const afterText = ref('')
 const compareText = ref('')
 const dialogVisible = ref(false)
-const prompt = computed(() => window.api.prompt.zh)
+const prompt = computed(() =>
+  env.value.textlang === 'en' ? window.api.prompt.en : window.api.prompt.zh
+)
 const env = ref(
   JSON.parse(localStorage.getItem('env')) || {
     link: 'https://api.openai.com/v1/chat/completions',
@@ -16,6 +18,7 @@ const env = ref(
     model: 'gpt-3.5-turbo',
     timeout: 15000,
     stream: false,
+    textlang: 'zh',
     proxy: ''
   }
 )
@@ -228,6 +231,12 @@ const handleSend = async (currentPrompt: string, event: string) => {
       </el-form-item>
       <el-form-item label="代理端口" label-width="90">
         <el-input v-model="env.proxy" autocomplete="off" placeholder="http://127.0.0.1:xxxx" />
+      </el-form-item>
+      <el-form-item label="文章语言" label-width="90">
+        <el-select v-model="env.textlang" placeholder="请选择语言">
+          <el-option label="中文" value="zh" />
+          <el-option label="英文" value="en" />
+        </el-select>
       </el-form-item>
     </el-form>
     <template #footer>
