@@ -11,6 +11,7 @@ interface ResultTextAreaProps {
     handleExport: () => void
     handleCopy: () => void
     handleClearResult: () => void
+    handleTextChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
 }
 
 export function ResultTextArea({
@@ -20,6 +21,7 @@ export function ResultTextArea({
     handleExport,
     handleCopy,
     handleClearResult,
+    handleTextChange
 }: ResultTextAreaProps) {
     return (
         <div className="space-y-4">
@@ -87,7 +89,7 @@ export function ResultTextArea({
                     placeholder="处理后的文本将显示在此..."
                     className="min-h-[300px] resize-none"
                     value={resultText}
-                    readOnly
+                    onChange={handleTextChange}
                 />
                 {isProcessing && (
                     <div className="absolute inset-0 bg-background/80 flex items-center justify-center">

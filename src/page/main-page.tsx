@@ -21,13 +21,14 @@ export default function MainPage() {
         handleExport,
         handleCopy,
         handleClearResult,
-        handleTextChange,
+        handleSourceTextChange,
+        handleResultTextChange,
         processText
     } = usePaperPolisher()
 
     return (
-        <div className="w-full transition-all duration-300 fixed inset-0 z-50 bg-background">
-            <div>
+        <div className="w-full min-h-screen bg-background overflow-y-auto">
+            <div className="container mx-auto py-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                     {/* Source Text Section */}
                     <SourceTextArea
@@ -36,7 +37,7 @@ export default function MainPage() {
                         handleImport={handleImport}
                         handlePaste={handlePaste}
                         handleClear={handleClear}
-                        handleTextChange={handleTextChange}
+                        handleTextChange={handleSourceTextChange}
                     />
 
                     {/* Result Text Section */}
@@ -54,6 +55,7 @@ export default function MainPage() {
                                     handleExport={handleExport}
                                     handleCopy={handleCopy}
                                     handleClearResult={handleClearResult}
+                                    handleTextChange={handleResultTextChange}
                                 />
                             </TabsContent>
 
@@ -68,10 +70,19 @@ export default function MainPage() {
                 </div>
 
                 {/* Action Buttons */}
-                <ActionButtons
-                    isProcessing={isProcessing}
-                    processText={processText}
-                />
+                <div className="px-4 mt-4">
+                    <ActionButtons
+                        isProcessing={isProcessing}
+                        processText={processText}
+                    />
+                </div>
+
+                {/* Diff Section */}
+                <div className="px-4 mt-4 border-t">
+                    <h2 className="text-lg font-semibold">Diff Section</h2>
+                    <p>这里可以添加 Diff 组件或相关功能。</p>
+                </div>
+
             </div>
         </div>
     )

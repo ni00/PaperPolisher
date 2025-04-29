@@ -81,8 +81,13 @@ export function usePaperPolisher() {
         setSimilarityScore(null)
     }
 
-    const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const handleSourceTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setSourceText(e.target.value)
+        updateWordCount(e.target.value)
+    }
+
+    const handleResultTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setResultText(e.target.value)
         updateWordCount(e.target.value)
     }
 
@@ -146,7 +151,8 @@ export function usePaperPolisher() {
         handleExport,
         handleCopy,
         handleClearResult,
-        handleTextChange,
+        handleSourceTextChange,
+        handleResultTextChange,
         processText
     }
 }
