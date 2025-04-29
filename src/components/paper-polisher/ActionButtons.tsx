@@ -1,6 +1,6 @@
 import React from "react"
 import { Button } from "@/components/ui/button"
-import { Percent, Sparkles, Settings } from "lucide-react"
+import { Percent, Sparkles } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface ActionButtonsProps {
@@ -101,6 +101,24 @@ export function ActionButtons({ isProcessing, processText }: ActionButtonsProps)
                 </Tooltip>
             </TooltipProvider>
 
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="outline"
+                            className="w-full hover:bg-slate-100"
+                            onClick={() => processText("reference")}
+                            disabled={isProcessing}
+                        >
+                            文献校正
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>校正参考文献的格式</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+
             {/* AI Paraphrasing Button */}
             <TooltipProvider>
                 <Tooltip>
@@ -137,20 +155,6 @@ export function ActionButtons({ isProcessing, processText }: ActionButtonsProps)
                     </TooltipTrigger>
                     <TooltipContent>
                         <p>使用AI检查重复率</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button variant="outline" className="w-full hover:bg-slate-100" disabled={isProcessing}>
-                            <Settings className="h-4 w-4 mr-1 inline-block" />
-                            设置
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>配置设置</p>
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { use, useEffect, useState } from "react"
 
 export interface PaperPolisherState {
     sourceText: string
@@ -15,35 +15,36 @@ export function usePaperPolisher() {
     const [activeTab, setActiveTab] = useState("edit")
     const [isProcessing, setIsProcessing] = useState(false)
     const [similarityScore, setSimilarityScore] = useState<number | null>(null)
-    const [wordCount, setWordCount] = useState(0)
+    const [sourceWordCount, setSourceWordCount] = useState(0)
+    const [resultWordCount, setResultWordCount] = useState(0)
 
-    const updateWordCount = (text: string) => {
-        // Simple word count calculation
-        const words = text
-            .trim()
-            .split(/\s+/)
-            .filter((word) => word.length > 0)
-        setWordCount(words.length)
-    }
+    useEffect(() => {
+        setSourceWordCount(sourceText.length)
+    }, [sourceText])
+
+    useEffect(() => {
+        setResultWordCount(resultText.length)
+    }, [resultText])
 
     const handleImport = () => {
-        // In a real app, this would open a file picker
-        alert("导入功能将在此实现")
-    }
-
-    const handlePaste = async () => {
-        try {
-            const text = await navigator.clipboard.readText()
-            setSourceText(text)
-            updateWordCount(text)
-        } catch (err) {
-            alert("无法读取剪贴板。请手动粘贴。")
+        const fileInput = document.createElement("input")
+        fileInput.type = "file"
+        fileInput.accept = ".txt"
+        fileInput.onchange = (e) => {
+            const file = (e.target as HTMLInputElement).files?.[0]
+            if (file) {
+                const reader = new FileReader()
+                reader.onload = (event) => {
+                    setSourceText(event.target?.result as string)
+                }
+                reader.readAsText(file)
+            }
         }
+        fileInput.click()
     }
 
     const handleClear = () => {
         setSourceText("")
-        setWordCount(0)
     }
 
     const handleExport = () => {
@@ -76,19 +77,18 @@ export function usePaperPolisher() {
         }
     }
 
-    const handleClearResult = () => {
+    const handleReplaceSource = () => {
+        setSourceText(resultText)
         setResultText("")
         setSimilarityScore(null)
     }
 
     const handleSourceTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setSourceText(e.target.value)
-        updateWordCount(e.target.value)
     }
 
     const handleResultTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setResultText(e.target.value)
-        updateWordCount(e.target.value)
     }
 
     const processText = (action: string) => {
@@ -118,6 +118,9 @@ export function usePaperPolisher() {
                 case "translate":
                     setResultText(`[已翻译] ${sourceText}`)
                     break
+                case "reference":
+                    setResultText(`[已校正] ${sourceText}`)
+                    break
                 case "ai-paraphrase":
                     setResultText(
                         `[AI降重结果] 这是您文本的完全改写版本，保持了原意的同时使用了不同的词语和句式结构，以减少与原文的相似度。`,
@@ -143,14 +146,14 @@ export function usePaperPolisher() {
         activeTab,
         isProcessing,
         similarityScore,
-        wordCount,
+        sourceWordCount,
+        resultWordCount,
         setActiveTab,
         handleImport,
-        handlePaste,
         handleClear,
         handleExport,
         handleCopy,
-        handleClearResult,
+        handleReplaceSource,
         handleSourceTextChange,
         handleResultTextChange,
         processText

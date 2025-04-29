@@ -10,7 +10,7 @@ interface ResultTextAreaProps {
     isProcessing: boolean
     handleExport: () => void
     handleCopy: () => void
-    handleClearResult: () => void
+    handleReplaceSource: () => void
     handleTextChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
 }
 
@@ -20,7 +20,7 @@ export function ResultTextArea({
     isProcessing,
     handleExport,
     handleCopy,
-    handleClearResult,
+    handleReplaceSource,
     handleTextChange
 }: ResultTextAreaProps) {
     return (
@@ -38,7 +38,7 @@ export function ResultTextArea({
                             <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={handleClearResult}
+                                onClick={handleReplaceSource}
                                 className="hover:bg-slate-100"
                             >
                                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -87,7 +87,7 @@ export function ResultTextArea({
             <div className="relative">
                 <Textarea
                     placeholder="处理后的文本将显示在此..."
-                    className="min-h-[300px] resize-none"
+                    className="h-[300px] resize-none overflow-y-auto"
                     value={resultText}
                     onChange={handleTextChange}
                 />

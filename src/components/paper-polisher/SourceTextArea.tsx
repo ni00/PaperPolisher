@@ -1,25 +1,25 @@
 import React from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Import, Clipboard, Trash2 } from "lucide-react"
+import { Import, Trash2, Settings } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface SourceTextAreaProps {
     sourceText: string
     wordCount: number
     handleImport: () => void
-    handlePaste: () => Promise<void>
     handleClear: () => void
     handleTextChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
+    handleSetting: () => void
 }
 
 export function SourceTextArea({
     sourceText,
     wordCount,
     handleImport,
-    handlePaste,
     handleClear,
-    handleTextChange
+    handleTextChange,
+    handleSetting
 }: SourceTextAreaProps) {
     return (
         <div className="space-y-4">
@@ -38,19 +38,6 @@ export function SourceTextArea({
                     </Tooltip>
                 </TooltipProvider>
 
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="outline" size="sm" onClick={handlePaste} className="hover:bg-slate-100">
-                                <Clipboard className="h-4 w-4 mr-2" />
-                                粘贴
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>从剪贴板粘贴</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
 
                 <TooltipProvider>
                     <Tooltip>
@@ -66,6 +53,20 @@ export function SourceTextArea({
                     </Tooltip>
                 </TooltipProvider>
 
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="outline" size="sm" onClick={handleSetting} className="hover:bg-slate-100">
+                                <Settings className="h-4 w-4 mr-2" />
+                                设置
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>配置设置</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+
                 <div className="ml-auto flex items-center text-sm text-muted-foreground">
                     <span>{wordCount} 字</span>
                 </div>
@@ -74,7 +75,7 @@ export function SourceTextArea({
             <div className="relative">
                 <Textarea
                     placeholder="在此输入您的文本..."
-                    className="min-h-[344px] resize-none"
+                    className="h-[344px] resize-none overflow-y-auto"
                     value={sourceText}
                     onChange={handleTextChange}
                 />

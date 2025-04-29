@@ -5,6 +5,10 @@ import { ResultTextArea } from "@/components/paper-polisher/ResultTextArea"
 import { PlagiarismReport } from "@/components/paper-polisher/PlagiarismReport"
 import { ActionButtons } from "@/components/paper-polisher/ActionButtons"
 import { usePaperPolisher } from "@/hooks/usePaperPolisher"
+import DiffMatchPatch from 'diff-match-patch'
+import { useEffect, useState } from "react"
+
+const dmp = new DiffMatchPatch()
 
 export default function MainPage() {
     const {
@@ -13,18 +17,27 @@ export default function MainPage() {
         activeTab,
         isProcessing,
         similarityScore,
-        wordCount,
+        sourceWordCount,
+        resultWordCount,
         setActiveTab,
         handleImport,
-        handlePaste,
         handleClear,
         handleExport,
         handleCopy,
-        handleClearResult,
+        handleReplaceSource,
         handleSourceTextChange,
         handleResultTextChange,
         processText
     } = usePaperPolisher()
+
+    const [diffHtml, setDiffHtml] = useState<string>("")
+
+    useEffect(() => {
+        const diff = dmp.diff_main(sourceText, resultText)
+        dmp.diff_cleanupSemantic(diff)
+        const html = dmp.diff_prettyHtml(diff)
+        setDiffHtml(html)
+    }, [sourceText, resultText])
 
     return (
         <div className="w-full min-h-screen bg-background overflow-y-auto">
@@ -33,11 +46,11 @@ export default function MainPage() {
                     {/* Source Text Section */}
                     <SourceTextArea
                         sourceText={sourceText}
-                        wordCount={wordCount}
+                        wordCount={sourceWordCount}
                         handleImport={handleImport}
-                        handlePaste={handlePaste}
                         handleClear={handleClear}
                         handleTextChange={handleSourceTextChange}
+                        handleSetting={() => { }}
                     />
 
                     {/* Result Text Section */}
@@ -50,11 +63,11 @@ export default function MainPage() {
                             <TabsContent value="edit" className="mt-2">
                                 <ResultTextArea
                                     resultText={resultText}
-                                    wordCount={wordCount}
+                                    wordCount={resultWordCount}
                                     isProcessing={isProcessing}
                                     handleExport={handleExport}
                                     handleCopy={handleCopy}
-                                    handleClearResult={handleClearResult}
+                                    handleReplaceSource={handleReplaceSource}
                                     handleTextChange={handleResultTextChange}
                                 />
                             </TabsContent>
@@ -79,8 +92,8 @@ export default function MainPage() {
 
                 {/* Diff Section */}
                 <div className="px-4 mt-4 border-t">
-                    <h2 className="text-lg font-semibold">Diff Section</h2>
-                    <p>这里可以添加 Diff 组件或相关功能。</p>
+                    <h2 className="text-md font-semibold">差异对比:</h2>
+                    <div className="mt-2 max-h-[300px] overflow-y-auto" dangerouslySetInnerHTML={{ __html: diffHtml }} />
                 </div>
 
             </div>
