@@ -1,4 +1,3 @@
-import type React from "react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { SourceTextArea } from "@/components/paper-polisher/SourceTextArea"
 import { ResultTextArea } from "@/components/paper-polisher/ResultTextArea"

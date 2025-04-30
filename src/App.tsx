@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import './App.css'
 import MainPage from './page/main-page'
 import { Toaster } from "@/components/ui/sonner"
