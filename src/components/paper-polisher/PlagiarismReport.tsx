@@ -36,7 +36,7 @@ export function PlagiarismReport({ similarityScore, resultText }: PlagiarismRepo
                 </div>
             </div>
 
-            <div className="border rounded-md p-4 space-y-2">
+            <div className="border rounded-md p-[10px] space-y-2">
                 <h3 className="font-medium flex items-center gap-2">
                     <AlertCircle className="h-4 w-4 text-amber-500" />
                     查重分析
