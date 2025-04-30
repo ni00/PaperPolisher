@@ -19,11 +19,6 @@
     ],
     "security": {
       "csp": null
-    },
-    "android": {
-      "package": "com.paperpolisher.app",
-      "minSdkVersion": 24,
-      "targetSdkVersion": 33
     }
   },
   "bundle": {
@@ -52,12 +47,6 @@
           "SimpChinese"
         ]
       }
-    },
-    "android": {
-      "icon": "icons/icon.png",
-      "versionCode": 200,
-      "minSdkVersion": 24,
-      "targetSdkVersion": 33
     }
   }
 }
