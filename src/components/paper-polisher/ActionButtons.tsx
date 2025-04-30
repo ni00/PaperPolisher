@@ -119,7 +119,6 @@ export function ActionButtons({ isProcessing, processText }: ActionButtonsProps)
                 </Tooltip>
             </TooltipProvider>
 
-            {/* AI Paraphrasing Button */}
             <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
@@ -139,7 +138,6 @@ export function ActionButtons({ isProcessing, processText }: ActionButtonsProps)
                 </Tooltip>
             </TooltipProvider>
 
-            {/* AI Plagiarism Detection Button */}
             <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
