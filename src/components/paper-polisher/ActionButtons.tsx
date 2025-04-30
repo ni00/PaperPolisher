@@ -110,7 +110,7 @@ export function ActionButtons({ isProcessing, processText }: ActionButtonsProps)
                             onClick={() => processText("reference")}
                             disabled={isProcessing}
                         >
-                            文献校正
+                            校正
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent>

@@ -4,6 +4,7 @@ import { SourceTextArea } from "@/components/paper-polisher/SourceTextArea"
 import { ResultTextArea } from "@/components/paper-polisher/ResultTextArea"
 import { PlagiarismReport } from "@/components/paper-polisher/PlagiarismReport"
 import { ActionButtons } from "@/components/paper-polisher/ActionButtons"
+import { SettingsDialog } from "@/components/paper-polisher/SettingsDialog"
 import { usePaperPolisher } from "@/hooks/usePaperPolisher"
 import DiffMatchPatch from 'diff-match-patch'
 import { useEffect, useState } from "react"
@@ -19,7 +20,10 @@ export default function MainPage() {
         similarityScore,
         sourceWordCount,
         resultWordCount,
+        isSettingsOpen,
         setActiveTab,
+        handleSettingOpen,
+        handleSettingClose,
         handleImport,
         handleClear,
         handleExport,
@@ -50,7 +54,7 @@ export default function MainPage() {
                         handleImport={handleImport}
                         handleClear={handleClear}
                         handleTextChange={handleSourceTextChange}
-                        handleSetting={() => { }}
+                        handleSetting={handleSettingOpen}
                     />
 
                     {/* Result Text Section */}
@@ -95,6 +99,12 @@ export default function MainPage() {
                     <h2 className="text-md font-semibold">差异对比:</h2>
                     <div className="mt-2 max-h-[300px] overflow-y-auto" dangerouslySetInnerHTML={{ __html: diffHtml }} />
                 </div>
+
+                {/* 设置弹窗 */}
+                <SettingsDialog
+                    open={isSettingsOpen}
+                    onOpenChange={handleSettingClose}
+                />
             </div>
         </div>
     )

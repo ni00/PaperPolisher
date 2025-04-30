@@ -3,20 +3,21 @@ import { generateText } from 'ai';
 
 export const requestOpenAI = async (systemPrompt: string, userPrompt: string): Promise<string> => {
     try {
-        // 默认使用硅基流动的API
+        // 从 localStorage 获取 API 配置
         const openai = createOpenAI({
             baseURL: localStorage.getItem("baseURL") || 'https://api.siliconflow.cn/v1',
             apiKey: localStorage.getItem("apiKey") || 'sk-xxx',
             compatibility: 'compatible',
         });
-        // 默认使用DeepSeek-V3模型
+        // 从 localStorage 获取模型和温度参数
         const model = openai(localStorage.getItem("model") || 'deepseek-ai/DeepSeek-V3');
+        const temperature = parseFloat(localStorage.getItem("temperature") || '0.7');
 
         const { text } = await generateText({
             model: model,
             system: systemPrompt,
             prompt: userPrompt,
-            temperature: 0.7,
+            temperature: temperature,
         });
 
         return text;

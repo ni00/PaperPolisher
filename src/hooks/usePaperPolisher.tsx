@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react"
 import { requestOpenAI } from "../lib/request"
 import {
-    polishPrompt,
-    rewritePrompt,
-    expandPrompt,
-    condensePrompt,
-    translatePrompt,
-    referencePrompt,
-    aiReducePrompt,
-    aiCheckPrompt
+    polishPrompt as defaultPolishPrompt,
+    rewritePrompt as defaultRewritePrompt,
+    expandPrompt as defaultExpandPrompt,
+    condensePrompt as defaultCondensePrompt,
+    translatePrompt as defaultTranslatePrompt,
+    referencePrompt as defaultReferencePrompt,
+    aiReducePrompt as defaultAiReducePrompt,
+    aiCheckPrompt as defaultAiCheckPrompt
 } from "../lib/prompts"
 import { toast } from "sonner"
 
@@ -29,6 +29,35 @@ export function usePaperPolisher() {
     const [similarityScore, setSimilarityScore] = useState<number | null>(null)
     const [sourceWordCount, setSourceWordCount] = useState(0)
     const [resultWordCount, setResultWordCount] = useState(0)
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+
+    // 初始化提示词模板到 localStorage
+    useEffect(() => {
+        if (!localStorage.getItem("polishPrompt")) {
+            localStorage.setItem("polishPrompt", defaultPolishPrompt);
+        }
+        if (!localStorage.getItem("rewritePrompt")) {
+            localStorage.setItem("rewritePrompt", defaultRewritePrompt);
+        }
+        if (!localStorage.getItem("expandPrompt")) {
+            localStorage.setItem("expandPrompt", defaultExpandPrompt);
+        }
+        if (!localStorage.getItem("condensePrompt")) {
+            localStorage.setItem("condensePrompt", defaultCondensePrompt);
+        }
+        if (!localStorage.getItem("translatePrompt")) {
+            localStorage.setItem("translatePrompt", defaultTranslatePrompt);
+        }
+        if (!localStorage.getItem("referencePrompt")) {
+            localStorage.setItem("referencePrompt", defaultReferencePrompt);
+        }
+        if (!localStorage.getItem("aiReducePrompt")) {
+            localStorage.setItem("aiReducePrompt", defaultAiReducePrompt);
+        }
+        if (!localStorage.getItem("aiCheckPrompt")) {
+            localStorage.setItem("aiCheckPrompt", defaultAiCheckPrompt);
+        }
+    }, []);
 
     useEffect(() => {
         setSourceWordCount(sourceText.length)
@@ -37,6 +66,14 @@ export function usePaperPolisher() {
     useEffect(() => {
         setResultWordCount(resultText.length)
     }, [resultText])
+
+    const handleSettingOpen = () => {
+        setIsSettingsOpen(true);
+    }
+
+    const handleSettingClose = () => {
+        setIsSettingsOpen(false);
+    }
 
     const handleImport = () => {
         try {
@@ -157,28 +194,28 @@ export function usePaperPolisher() {
             // 根据不同操作选择相应的提示词
             switch (action) {
                 case "polish":
-                    systemPrompt = polishPrompt;
+                    systemPrompt = localStorage.getItem("polishPrompt") || defaultPolishPrompt;
                     break;
                 case "rewrite":
-                    systemPrompt = rewritePrompt;
+                    systemPrompt = localStorage.getItem("rewritePrompt") || defaultRewritePrompt;
                     break;
                 case "expand":
-                    systemPrompt = expandPrompt;
+                    systemPrompt = localStorage.getItem("expandPrompt") || defaultExpandPrompt;
                     break;
                 case "condense":
-                    systemPrompt = condensePrompt;
+                    systemPrompt = localStorage.getItem("condensePrompt") || defaultCondensePrompt;
                     break;
                 case "translate":
-                    systemPrompt = translatePrompt;
+                    systemPrompt = localStorage.getItem("translatePrompt") || defaultTranslatePrompt;
                     break;
                 case "reference":
-                    systemPrompt = referencePrompt;
+                    systemPrompt = localStorage.getItem("referencePrompt") || defaultReferencePrompt;
                     break;
                 case "ai-paraphrase":
-                    systemPrompt = aiReducePrompt;
+                    systemPrompt = localStorage.getItem("aiReducePrompt") || defaultAiReducePrompt;
                     break;
                 case "ai-plagiarism":
-                    systemPrompt = aiCheckPrompt;
+                    systemPrompt = localStorage.getItem("aiCheckPrompt") || defaultAiCheckPrompt;
                     break;
                 default:
                     toast.error("未知的操作类型");
@@ -232,7 +269,10 @@ export function usePaperPolisher() {
         similarityScore,
         sourceWordCount,
         resultWordCount,
+        isSettingsOpen,
         setActiveTab,
+        handleSettingOpen,
+        handleSettingClose,
         handleImport,
         handleClear,
         handleExport,
