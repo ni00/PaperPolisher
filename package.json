@@ -40,7 +40,6 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",
-    "@tauri-apps/cli-android": "^2.0.0",
     "@types/diff-match-patch": "^1.0.36",
     "@types/node": "^22.1.0",
     "@types/react": "^19.1.2",

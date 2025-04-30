@@ -54,7 +54,10 @@
       }
     },
     "android": {
-      "icon": "icons/icon.png"
+      "icon": "icons/icon.png",
+      "versionCode": 200,
+      "minSdkVersion": 24,
+      "targetSdkVersion": 33,
     }
   }
 }
