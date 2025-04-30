@@ -7,7 +7,13 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "tauri:android": "tauri android",
+    "build:android": "tauri android build",
+    "build:android-dev": "tauri android dev",
+    "build:arm-mac": "tauri build --target aarch64-apple-darwin",
+    "build:arm-win": "tauri build --target aarch64-pc-windows-msvc",
+    "build:arm-linux": "tauri build --target aarch64-unknown-linux-gnu"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.20",
@@ -34,6 +40,7 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",
+    "@tauri-apps/cli-android": "^2.0.0",
     "@types/diff-match-patch": "^1.0.36",
     "@types/node": "^22.1.0",
     "@types/react": "^19.1.2",

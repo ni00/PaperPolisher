@@ -10,11 +10,24 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  build-desktop:
     strategy:
       fail-fast: false
       matrix:
         platform: [windows-latest, macos-latest, ubuntu-latest]
+        include:
+          # 为macOS添加ARM支持
+          - platform: macos-latest
+            arch: aarch64
+            target: aarch64-apple-darwin
+          # 为Windows添加ARM支持
+          - platform: windows-latest
+            arch: aarch64
+            target: aarch64-pc-windows-msvc
+          # 为Ubuntu添加ARM支持
+          - platform: ubuntu-latest
+            arch: aarch64
+            target: aarch64-unknown-linux-gnu
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -23,6 +36,8 @@ jobs:
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target || '' }}
 
       - name: Install dependencies (Ubuntu)
         if: matrix.platform == 'ubuntu-latest'
@@ -30,6 +45,14 @@ jobs:
           sudo add-apt-repository universe -y
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
+
+      # 如果是Ubuntu ARM构建，设置交叉编译环境
+      - name: Setup Ubuntu ARM cross-compilation
+        if: matrix.platform == 'ubuntu-latest' && matrix.arch == 'aarch64'
+        run: |
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig" >> $GITHUB_ENV
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -63,7 +86,7 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
 
-      - name: Build application
+      - name: Build desktop application
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -73,3 +96,67 @@ jobs:
           releaseBody: 'See the release page for more details.'
           releaseDraft: true
           prerelease: false
+          args: ${{ matrix.arch && format('--target {0}', matrix.target) || '' }}
+
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android, armv7-linux-androideabi, i686-linux-android, x86_64-linux-android
+
+      - name: Install Android SDK & NDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Cargo-NDK
+        run: cargo install cargo-ndk
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: latest
+          run_install: false
+
+      - name: Install frontend dependencies
+        run: pnpm install
+
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli
+
+      - name: Build Android application
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pnpm tauri android build
+          mkdir -p release/android
+          cp src-tauri/gen/android/app/build/outputs/apk/debug/app-debug.apk release/android/PaperPolisher-android.apk
+          cp src-tauri/gen/android/app/build/outputs/bundle/release/app-release.aab release/android/PaperPolisher-android.aab || echo "AAB file not generated"
+
+      - name: Upload Android artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-artifacts
+          path: release/android/
+          retention-days: 7
+
+      - name: Release Android artifacts
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/android/*
+          draft: true
