@@ -95,7 +95,6 @@ export default function MainPage() {
                     <h2 className="text-md font-semibold">差异对比:</h2>
                     <div className="mt-2 max-h-[300px] overflow-y-auto" dangerouslySetInnerHTML={{ __html: diffHtml }} />
                 </div>
-
             </div>
         </div>
     )

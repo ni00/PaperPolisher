@@ -1,4 +1,16 @@
-import { use, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
+import { requestOpenAI } from "../lib/request"
+import {
+    polishPrompt,
+    rewritePrompt,
+    expandPrompt,
+    condensePrompt,
+    translatePrompt,
+    referencePrompt,
+    aiReducePrompt,
+    aiCheckPrompt
+} from "../lib/prompts"
+import { toast } from "sonner"
 
 export interface PaperPolisherState {
     sourceText: string
@@ -27,60 +39,99 @@ export function usePaperPolisher() {
     }, [resultText])
 
     const handleImport = () => {
-        const fileInput = document.createElement("input")
-        fileInput.type = "file"
-        fileInput.accept = ".txt"
-        fileInput.onchange = (e) => {
-            const file = (e.target as HTMLInputElement).files?.[0]
-            if (file) {
-                const reader = new FileReader()
-                reader.onload = (event) => {
-                    setSourceText(event.target?.result as string)
+        try {
+            const fileInput = document.createElement("input")
+            fileInput.type = "file"
+            fileInput.accept = ".txt"
+            fileInput.onchange = (e) => {
+                try {
+                    const file = (e.target as HTMLInputElement).files?.[0]
+                    if (file) {
+                        const reader = new FileReader()
+                        reader.onload = (event) => {
+                            try {
+                                setSourceText(event.target?.result as string)
+                                toast.success("文件导入成功")
+                            } catch (err) {
+                                toast.error("读取文件内容失败")
+                                console.error("读取文件内容失败:", err)
+                            }
+                        }
+                        reader.onerror = () => {
+                            toast.error("读取文件失败")
+                            console.error("读取文件失败:", reader.error)
+                        }
+                        reader.readAsText(file)
+                    }
+                } catch (err) {
+                    toast.error("选择文件失败")
+                    console.error("选择文件失败:", err)
                 }
-                reader.readAsText(file)
             }
+            fileInput.click()
+        } catch (err) {
+            toast.error("导入操作失败")
+            console.error("导入操作失败:", err)
         }
-        fileInput.click()
     }
 
     const handleClear = () => {
         setSourceText("")
+        toast.info("内容已清空")
     }
 
     const handleExport = () => {
-        const blob = new Blob([resultText], { type: "text/plain" })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement("a")
-        a.href = url
-        a.download = "polished-text.txt"
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
+        try {
+            if (!resultText.trim()) {
+                toast.error("没有内容可导出")
+                return
+            }
+
+            const blob = new Blob([resultText], { type: "text/plain" })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = "polished-text.txt"
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+            toast.success("文件导出成功")
+        } catch (err) {
+            toast.error("导出失败")
+            console.error("导出失败:", err)
+        }
     }
 
     const handleCopy = async () => {
         try {
-            await navigator.clipboard.writeText(resultText)
-            // Use a more subtle notification instead of alert
-            const notification = document.getElementById("copy-notification")
-            if (notification) {
-                notification.classList.remove("opacity-0")
-                notification.classList.add("opacity-100")
-                setTimeout(() => {
-                    notification.classList.remove("opacity-100")
-                    notification.classList.add("opacity-0")
-                }, 2000)
+            if (!resultText.trim()) {
+                toast.error("没有内容可复制")
+                return
             }
+
+            await navigator.clipboard.writeText(resultText)
+            toast.success("文本已复制到剪贴板")
         } catch (err) {
-            alert("复制失败。请手动复制。")
+            toast.error("复制失败，请手动复制")
+            console.error("复制失败:", err)
         }
     }
 
     const handleReplaceSource = () => {
-        setSourceText(resultText)
-        setResultText("")
-        setSimilarityScore(null)
+        try {
+            if (!resultText.trim()) {
+                toast.error("没有内容可替换")
+                return
+            }
+            setSourceText(resultText)
+            setResultText("")
+            setSimilarityScore(null)
+            toast.success("内容已替换到源文本框")
+        } catch (err) {
+            toast.error("替换失败")
+            console.error("替换失败:", err)
+        }
     }
 
     const handleSourceTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -91,53 +142,86 @@ export function usePaperPolisher() {
         setResultText(e.target.value)
     }
 
-    const processText = (action: string) => {
+    const processText = async (action: string) => {
         if (!sourceText.trim()) {
-            alert("请先输入一些文本")
+            toast.error("请先输入一些文本")
             return
         }
 
         setIsProcessing(true)
+        let systemPrompt = "";
+        let result = "";
+        let toastId = toast.loading("正在处理文本...");
 
-        // Simulate API call with timeout
-        setTimeout(() => {
-            // In a real app, these would call APIs or use more sophisticated processing
+        try {
+            // 根据不同操作选择相应的提示词
             switch (action) {
                 case "polish":
-                    setResultText(`[已润色] ${sourceText}`)
-                    break
+                    systemPrompt = polishPrompt;
+                    break;
                 case "rewrite":
-                    setResultText(`[已改写] ${sourceText}`)
-                    break
+                    systemPrompt = rewritePrompt;
+                    break;
                 case "expand":
-                    setResultText(`[已扩写] ${sourceText}\n\n此处将显示更多细节和阐述。`)
-                    break
+                    systemPrompt = expandPrompt;
+                    break;
                 case "condense":
-                    setResultText(`[已缩写] ${sourceText.substring(0, sourceText.length / 2)}...`)
-                    break
+                    systemPrompt = condensePrompt;
+                    break;
                 case "translate":
-                    setResultText(`[已翻译] ${sourceText}`)
-                    break
+                    systemPrompt = translatePrompt;
+                    break;
                 case "reference":
-                    setResultText(`[已校正] ${sourceText}`)
-                    break
+                    systemPrompt = referencePrompt;
+                    break;
                 case "ai-paraphrase":
-                    setResultText(
-                        `[AI降重结果] 这是您文本的完全改写版本，保持了原意的同时使用了不同的词语和句式结构，以减少与原文的相似度。`,
-                    )
-                    break
+                    systemPrompt = aiReducePrompt;
+                    break;
                 case "ai-plagiarism":
-                    setResultText(
-                        `[AI查重结果]\n\n原创内容：78%\n发现潜在匹配：3处\n\n建议操作：\n- 检查高亮部分\n- 添加适当引用\n- 重新表述问题段落`,
-                    )
-                    setSimilarityScore(22) // Example similarity score
-                    setActiveTab("plagiarism")
-                    break
+                    systemPrompt = aiCheckPrompt;
+                    break;
                 default:
-                    setResultText(sourceText)
+                    toast.error("未知的操作类型");
+                    setIsProcessing(false);
+                    return;
             }
-            setIsProcessing(false)
-        }, 1500)
+
+            // 调用实际的API
+            result = await requestOpenAI(systemPrompt, sourceText);
+
+            // 如果是查重操作，设置相似度分数并切换到查重标签页
+            if (action === "ai-plagiarism") {
+                // 尝试从结果文本中提取相似度分数
+                const similarityMatch = result.match(/(\d+)%/);
+                if (similarityMatch && similarityMatch[1]) {
+                    setSimilarityScore(parseInt(similarityMatch[1]));
+                } else {
+                    // 如果无法从结果中提取，默认设置一个值
+                    setSimilarityScore(20);
+                }
+                setActiveTab("plagiarism");
+                toast.dismiss(toastId);
+                toast.success("查重完成");
+            } else {
+                setSimilarityScore(null);
+                toast.dismiss(toastId);
+                toast.success("处理完成");
+            }
+
+            setResultText(result);
+        } catch (err) {
+            if (err instanceof Error) {
+                toast.dismiss(toastId);
+                toast.error(`处理失败: ${err.message}`);
+            } else {
+                toast.dismiss(toastId);
+                toast.error('处理失败，请稍后重试');
+            }
+            console.error('处理文本时出错:', err);
+            // 保留最后一次成功处理的结果
+        } finally {
+            setIsProcessing(false);
+        }
     }
 
     return {
