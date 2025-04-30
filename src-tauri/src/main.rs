@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    tauri_react_shadui_template_lib::run()
+    paper_polisher_lib::run()
 }
