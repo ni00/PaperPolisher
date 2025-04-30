@@ -57,7 +57,7 @@
       "icon": "icons/icon.png",
       "versionCode": 200,
       "minSdkVersion": 24,
-      "targetSdkVersion": 33,
+      "targetSdkVersion": 33
     }
   }
 }

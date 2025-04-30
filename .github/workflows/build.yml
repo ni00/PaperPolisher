@@ -148,7 +148,7 @@ jobs:
           cp src-tauri/gen/android/app/build/outputs/bundle/release/app-release.aab release/android/PaperPolisher-android.aab || echo "AAB file not generated"
 
       - name: Upload Android artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: android-artifacts
           path: release/android/
