@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "paper-polisher",
+  "productName": "文心雕龙",
   "version": "2.0.0",
   "identifier": "com.paper-polisher.app",
   "build": {
@@ -30,6 +30,23 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "resources": [],
+    "shortDescription": "论文润色工具",
+    "longDescription": "文心雕龙是一个专业的论文润色和修改工具",
+    "externalBin": [],
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      },
+      "wix": {
+        "language": "zh-CN"
+      },
+      "nsis": {
+        "languages": [
+          "SimpChinese"
+        ]
+      }
+    }
   }
 }
