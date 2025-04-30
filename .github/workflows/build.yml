@@ -15,19 +15,6 @@ jobs:
       fail-fast: false
       matrix:
         platform: [windows-latest, macos-latest, ubuntu-latest]
-        include:
-          # 为macOS添加ARM支持
-          - platform: macos-latest
-            arch: aarch64
-            target: aarch64-apple-darwin
-          # 为Windows添加ARM支持
-          - platform: windows-latest
-            arch: aarch64
-            target: aarch64-pc-windows-msvc
-          # 为Ubuntu添加ARM支持
-          - platform: ubuntu-latest
-            arch: aarch64
-            target: aarch64-unknown-linux-gnu
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -36,8 +23,6 @@ jobs:
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target || '' }}
 
       - name: Install dependencies (Ubuntu)
         if: matrix.platform == 'ubuntu-latest'
@@ -45,21 +30,68 @@ jobs:
           sudo add-apt-repository universe -y
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
 
-      # 如果是Ubuntu ARM构建，设置交叉编译环境
-      - name: Setup Ubuntu ARM cross-compilation
-        if: matrix.platform == 'ubuntu-latest' && matrix.arch == 'aarch64'
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: latest
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
         run: |
-          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu pkg-config
-          # 安装必要的ARM64版本的库
-          sudo apt-get install -y libwebkit2gtk-4.1-dev:arm64 libgtk-3-dev:arm64 libayatana-appindicator3-dev:arm64 librsvg2-dev:arm64
-          # 配置pkg-config来支持交叉编译
-          echo "PKG_CONFIG_ALLOW_CROSS=1" >> $GITHUB_ENV
-          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
-          echo "PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig" >> $GITHUB_ENV
-          echo "PKG_CONFIG_SYSROOT_DIR=/usr/aarch64-linux-gnu" >> $GITHUB_ENV
-          # 添加架构支持
-          sudo dpkg --add-architecture arm64
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+      - name: Install frontend dependencies
+        run: pnpm install
+
+      - name: Use Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Build application
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v__VERSION__
+          releaseName: 'Paper Polisher v__VERSION__'
+          releaseBody: 'See the release page for more details.'
+          releaseDraft: true
+          prerelease: false
+
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android, armv7-linux-androideabi, i686-linux-android, x86_64-linux-android
+
+      - name: Install Android NDK
+        run: |
+          echo "y" | sudo ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "ndk;25.2.9519653" "build-tools;34.0.0" "platforms;android-34"
+          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/25.2.9519653" >> $GITHUB_ENV
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -88,82 +120,48 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
+      - name: Install Android tools
+        run: |
+          cargo install tauri-cli --version "^2.0.0-beta"
+          cargo install cargo-ndk
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
+
       - name: Use Rust cache
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
 
-      - name: Build desktop application
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: v__VERSION__
-          releaseName: 'Paper Polisher v__VERSION__'
-          releaseBody: 'See the release page for more details.'
-          releaseDraft: true
-          prerelease: false
-          args: ${{ matrix.arch && format('--target {0}', matrix.target) || '' }}
-
-  build-android:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android, armv7-linux-androideabi, i686-linux-android, x86_64-linux-android
-
-      - name: Install Android SDK & NDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Cargo-NDK
-        run: cargo install cargo-ndk
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: latest
-          run_install: false
-
-      - name: Install frontend dependencies
-        run: pnpm install
-
-      - name: Install Tauri CLI
-        run: cargo install tauri-cli
-
-      - name: Build Android application
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build Android APK
         run: |
-          pnpm tauri android build
-          mkdir -p release/android
-          cp src-tauri/gen/android/app/build/outputs/apk/debug/app-debug.apk release/android/PaperPolisher-android.apk
-          cp src-tauri/gen/android/app/build/outputs/bundle/release/app-release.aab release/android/PaperPolisher-android.aab || echo "AAB file not generated"
+          cargo tauri android build --release
+
+      - name: Build Android AAB
+        run: |
+          cargo tauri android build --release --bundle
 
       - name: Upload Android artifacts
         uses: actions/upload-artifact@v4
         with:
           name: android-artifacts
-          path: release/android/
-          retention-days: 7
+          path: |
+            src-tauri/gen/android/app/build/outputs/apk/release/*.apk
+            src-tauri/gen/android/app/build/outputs/bundle/release/*.aab
+          retention-days: 5
 
-      - name: Release Android artifacts
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Create Android Release
         uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: release/android/*
+          files: |
+            src-tauri/gen/android/app/build/outputs/apk/release/*.apk
+            src-tauri/gen/android/app/build/outputs/bundle/release/*.aab
           draft: true
+          prerelease: false
+          name: 'Paper Polisher Android v${{ github.ref_name }}'
+          body: '详情请参阅发布页。'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
