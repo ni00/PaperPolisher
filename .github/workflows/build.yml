@@ -149,7 +149,7 @@ jobs:
         run: |
           pnpm tauri android init
           pnpm tauri android build --apk
-          pnpm tauri android build --bundle aab
+          pnpm tauri android build --aab
 
       - name: Upload Android artifacts
         uses: actions/upload-artifact@v4
