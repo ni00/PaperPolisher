@@ -1,4 +1,4 @@
-# 📝 Paper Polisher
+# 📝 PaperPolisher 文心雕龙
 
 <div align="center">
 
@@ -8,6 +8,8 @@
 </div>
 
 > 一款强大的学术写作助手，基于 Tauri + React + TypeScript 构建，致力于提升您的论文质量并确保学术诚信。
+
+![文心雕龙](./example.jpg)
 
 ## ✨ 核心功能
 
