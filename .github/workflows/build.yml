@@ -144,11 +144,11 @@ jobs:
           
       - name: Build Android APK
         run: |
-          cargo tauri android build
+          pnpm tauri android build --apk
 
       - name: Build Android AAB
         run: |
-          cargo tauri android build --bundle
+          pnpm tauri android build --bundle aab
 
       - name: Upload Android artifacts
         uses: actions/upload-artifact@v4
