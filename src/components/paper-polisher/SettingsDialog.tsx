@@ -13,6 +13,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import {
+    polishPrompt,
+    rewritePrompt,
+    expandPrompt,
+    condensePrompt,
+    translatePrompt,
+    referencePrompt,
+    aiReducePrompt,
+    aiCheckPrompt
+} from "@/lib/prompts";
 
 interface SettingsDialogProps {
     open: boolean;
@@ -101,6 +111,50 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         }
     };
 
+    // 复原提示词模板到默认值
+    const resetCurrentTemplate = () => {
+        try {
+            switch (activeTab) {
+                case "polish":
+                    setPolishTemplate(polishPrompt);
+                    localStorage.setItem("polishPrompt", polishPrompt);
+                    break;
+                case "rewrite":
+                    setRewriteTemplate(rewritePrompt);
+                    localStorage.setItem("rewritePrompt", rewritePrompt);
+                    break;
+                case "expand":
+                    setExpandTemplate(expandPrompt);
+                    localStorage.setItem("expandPrompt", expandPrompt);
+                    break;
+                case "condense":
+                    setCondenseTemplate(condensePrompt);
+                    localStorage.setItem("condensePrompt", condensePrompt);
+                    break;
+                case "translate":
+                    setTranslateTemplate(translatePrompt);
+                    localStorage.setItem("translatePrompt", translatePrompt);
+                    break;
+                case "reference":
+                    setReferenceTemplate(referencePrompt);
+                    localStorage.setItem("referencePrompt", referencePrompt);
+                    break;
+                case "aiReduce":
+                    setAiReduceTemplate(aiReducePrompt);
+                    localStorage.setItem("aiReducePrompt", aiReducePrompt);
+                    break;
+                case "aiCheck":
+                    setAiCheckTemplate(aiCheckPrompt);
+                    localStorage.setItem("aiCheckPrompt", aiCheckPrompt);
+                    break;
+            }
+            toast.success("提示词模板已复原为默认值");
+        } catch (error) {
+            toast.error("复原提示词模板失败");
+            console.error("复原提示词模板失败:", error);
+        }
+    };
+
     // 保存所有设置
     const saveAllSettings = () => {
         saveModelSettings();
@@ -119,7 +173,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 </AlertDialogHeader>
 
                 <Tabs defaultValue="model" value={activeTab} onValueChange={setActiveTab} className="mt-4">
-                    <TabsList className="grid grid-cols-8">
+                    <TabsList className="grid grid-cols-9">
                         <TabsTrigger value="model">模型</TabsTrigger>
                         <TabsTrigger value="polish">润色</TabsTrigger>
                         <TabsTrigger value="rewrite">改写</TabsTrigger>
@@ -128,6 +182,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                         <TabsTrigger value="translate">翻译</TabsTrigger>
                         <TabsTrigger value="reference">校正</TabsTrigger>
                         <TabsTrigger value="aiReduce">降重</TabsTrigger>
+                        <TabsTrigger value="aiCheck">查重</TabsTrigger>
                     </TabsList>
 
                     {/* 模型参数设置 */}
@@ -209,7 +264,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                                 placeholder="请输入文本润色提示词模板..."
                             />
                         </div>
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={resetCurrentTemplate}>复原提示词</Button>
                             <Button onClick={saveCurrentTemplate}>保存提示词模板</Button>
                         </div>
                     </TabsContent>
@@ -228,7 +284,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                                 placeholder="请输入文本改写提示词模板..."
                             />
                         </div>
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={resetCurrentTemplate}>复原提示词</Button>
                             <Button onClick={saveCurrentTemplate}>保存提示词模板</Button>
                         </div>
                     </TabsContent>
@@ -247,7 +304,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                                 placeholder="请输入文本扩写提示词模板..."
                             />
                         </div>
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={resetCurrentTemplate}>复原提示词</Button>
                             <Button onClick={saveCurrentTemplate}>保存提示词模板</Button>
                         </div>
                     </TabsContent>
@@ -266,7 +324,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                                 placeholder="请输入文本缩写提示词模板..."
                             />
                         </div>
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={resetCurrentTemplate}>复原提示词</Button>
                             <Button onClick={saveCurrentTemplate}>保存提示词模板</Button>
                         </div>
                     </TabsContent>
@@ -285,7 +344,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                                 placeholder="请输入文本翻译提示词模板..."
                             />
                         </div>
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={resetCurrentTemplate}>复原提示词</Button>
                             <Button onClick={saveCurrentTemplate}>保存提示词模板</Button>
                         </div>
                     </TabsContent>
@@ -304,7 +364,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                                 placeholder="请输入文献格式化提示词模板..."
                             />
                         </div>
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={resetCurrentTemplate}>复原提示词</Button>
                             <Button onClick={saveCurrentTemplate}>保存提示词模板</Button>
                         </div>
                     </TabsContent>
@@ -323,7 +384,28 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                                 placeholder="请输入AI降重提示词模板..."
                             />
                         </div>
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={resetCurrentTemplate}>复原提示词</Button>
+                            <Button onClick={saveCurrentTemplate}>保存提示词模板</Button>
+                        </div>
+                    </TabsContent>
+
+                    {/* AI查重提示词设置 */}
+                    <TabsContent value="aiCheck" className="space-y-4 mt-4">
+                        <div>
+                            <label htmlFor="ai-check-template" className="block text-sm font-medium mb-1">
+                                AI查重提示词模板
+                            </label>
+                            <Textarea
+                                id="ai-check-template"
+                                className="w-full h-[400px] font-mono text-sm"
+                                value={aiCheckTemplate}
+                                onChange={(e) => setAiCheckTemplate(e.target.value)}
+                                placeholder="请输入AI查重提示词模板..."
+                            />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={resetCurrentTemplate}>复原提示词</Button>
                             <Button onClick={saveCurrentTemplate}>保存提示词模板</Button>
                         </div>
                     </TabsContent>
