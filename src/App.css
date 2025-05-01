@@ -119,3 +119,34 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 自定义滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* 针对设置对话框的滚动区域特别优化 */
+.max-h-\[80vh\] {
+  scrollbar-gutter: stable;
+}
+
+/* 针对文本区域的自定义滚动条 */
+textarea::-webkit-scrollbar {
+  width: 6px;
+}

@@ -23,6 +23,8 @@ import {
     aiReducePrompt,
     aiCheckPrompt
 } from "@/lib/prompts";
+import { checkUpdate, UpdateInfo } from "@/lib/utils";
+import { X } from "lucide-react";
 
 interface SettingsDialogProps {
     open: boolean;
@@ -35,6 +37,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     const [apiKey, setAPIKey] = useState(localStorage.getItem("apiKey") || "sk-xxx");
     const [model, setModel] = useState(localStorage.getItem("model") || "deepseek-ai/DeepSeek-V3");
     const [temperature, setTemperature] = useState(localStorage.getItem("temperature") || "0.7");
+
+    // 更新检测相关状态
+    const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
+    const [checkingUpdate, setCheckingUpdate] = useState(false);
+    const currentVersion = "2.0.0"; // 从package.json获取的版本号
 
     // 提示词模板相关状态
     const [polishTemplate, setPolishTemplate] = useState("");
@@ -60,6 +67,25 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         setAiReduceTemplate(localStorage.getItem("aiReducePrompt") || "");
         setAiCheckTemplate(localStorage.getItem("aiCheckPrompt") || "");
     }, [open]);
+
+    // 检测更新
+    const handleCheckUpdate = async () => {
+        setCheckingUpdate(true);
+        try {
+            const info = await checkUpdate(currentVersion);
+            setUpdateInfo(info);
+            if (info.hasUpdate) {
+                toast.success(`发现新版本：${info.latestVersion}`);
+            } else {
+                toast.info("当前已是最新版本");
+            }
+        } catch (error) {
+            console.error("检查更新失败:", error);
+            toast.error("检查更新失败，请稍后再试");
+        } finally {
+            setCheckingUpdate(false);
+        }
+    };
 
     // 保存模型参数到 localStorage
     const saveModelSettings = () => {
@@ -170,6 +196,14 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <AlertDialogDescription>
                         配置模型参数和编辑提示词模板
                     </AlertDialogDescription>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-4 right-4"
+                        onClick={() => onOpenChange(false)}
+                    >
+                        <X className="w-4 h-4" />
+                    </Button>
                 </AlertDialogHeader>
 
                 <Tabs defaultValue="model" value={activeTab} onValueChange={setActiveTab} className="mt-4">
@@ -410,6 +444,49 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                         </div>
                     </TabsContent>
                 </Tabs>
+
+                {/* 更新检测 */}
+                <div className="mt-6 p-4 border rounded-md">
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <h3 className="text-lg font-medium">软件更新</h3>
+                            <p className="text-sm text-gray-500">
+                                当前版本: {currentVersion}
+                                {updateInfo?.hasUpdate && (
+                                    <span className="ml-2 text-green-500">
+                                        有新版本可用: {updateInfo.latestVersion}
+                                    </span>
+                                )}
+                            </p>
+                        </div>
+                        <div className="flex gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={handleCheckUpdate}
+                                disabled={checkingUpdate}
+                            >
+                                {checkingUpdate ? "检查中..." : "检查更新"}
+                            </Button>
+                            {updateInfo?.hasUpdate && (
+                                <Button
+                                    onClick={() => window.open(updateInfo.releaseUrl, "_blank")}
+                                >
+                                    前往下载
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                    <div className="flex justify-end mt-3">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                            onClick={() => window.open("https://github.com/ni00/PaperPolisher", "_blank")}
+                        >
+                            访问官方网站
+                        </Button>
+                    </div>
+                </div>
 
                 <AlertDialogFooter className="mt-4">
                     <AlertDialogCancel>取消</AlertDialogCancel>
