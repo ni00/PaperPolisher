@@ -140,7 +140,7 @@ jobs:
 
       - name: Initialize Android project
         run: |
-          cargo tauri android init
+          pnpm tauri android init
           
       - name: Build Android APK
         run: |
