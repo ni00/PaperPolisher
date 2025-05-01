@@ -143,16 +143,10 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
 
-      - name: Initialize Android project
+      - name: Initialize and Build Android Project
         run: |
           pnpm tauri android init
-          
-      - name: Build Android APK
-        run: |
           pnpm tauri android build --apk
-
-      - name: Build Android AAB
-        run: |
           pnpm tauri android build --bundle aab
 
       - name: Upload Android artifacts
