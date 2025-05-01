@@ -138,6 +138,10 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
 
+      - name: Initialize Android project
+        run: |
+          cargo tauri android init
+          
       - name: Build Android APK
         run: |
           cargo tauri android build
