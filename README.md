@@ -7,7 +7,7 @@
 
 </div>
 
-> 一款强大的学术写作助手，基于 Tauri + React + TypeScript 构建，致力于提升您的论文质量并确保学术诚信。
+> 一个基于大语言模型提示词的论文润色工具 ，基于 Tauri + React + TypeScript 构建，致力于提升您的论文质量。
 
 ![文心雕龙](./example.jpg)
 
