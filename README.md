@@ -9,7 +9,7 @@
 
 > 一个基于大语言模型提示词的论文润色工具 ，基于 Tauri + React + TypeScript 构建，致力于提升您的论文质量。
 
-![文心雕龙](./example1.jpg)
+![文心雕龙](example1.jpg)
 
 ## ✨ 核心功能
 
@@ -55,7 +55,9 @@
 
 1. 启动应用程序
 2. 在设置页面设置好大模型的BaseURL和key。（推荐使用[硅基流动](https://cloud.siliconflow.cn/i/aiD5tTAX)）
-![设置页面](./example2.jpg)
+
+![设置页面](example2.jpg)
+
 3. 在左侧文本区域粘贴或输入您的论文内容
 4. 根据需求，调整润色或查重参数
 5. 点击对应功能按钮（「润色」或「查重」）
