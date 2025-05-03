@@ -6,7 +6,7 @@ export const requestOpenAI = async (systemPrompt: string, userPrompt: string): P
         // 从 localStorage 获取 API 配置
         const openai = createOpenAI({
             baseURL: localStorage.getItem("baseURL") || 'https://api.siliconflow.cn/v1',
-            apiKey: localStorage.getItem("apiKey") || 'sk-xxx',
+            apiKey: localStorage.getItem("apiKey") || '',
             compatibility: 'compatible',
         });
         // 从 localStorage 获取模型和温度参数

@@ -34,7 +34,7 @@ interface SettingsDialogProps {
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     // 模型参数相关状态
     const [baseURL, setBaseURL] = useState(localStorage.getItem("baseURL") || "https://api.siliconflow.cn/v1");
-    const [apiKey, setAPIKey] = useState(localStorage.getItem("apiKey") || "sk-xxx");
+    const [apiKey, setAPIKey] = useState(localStorage.getItem("apiKey") || "");
     const [model, setModel] = useState(localStorage.getItem("model") || "deepseek-ai/DeepSeek-V3");
     const [temperature, setTemperature] = useState(localStorage.getItem("temperature") || "0.7");
 
