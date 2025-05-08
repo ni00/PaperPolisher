@@ -86,10 +86,8 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set Android SDK environment variables
-        run: |
-          echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
-          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -98,8 +96,9 @@ jobs:
 
       - name: Install Android NDK
         run: |
-          echo "y" | sudo ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "ndk;25.2.9519653" "build-tools;34.0.0" "platforms;android-34"
-          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/25.2.9519653" >> $GITHUB_ENV
+          yes | sdkmanager --install "ndk;25.2.9519653"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/25.2.9519653" >> $GITHUB_ENV
+          echo "NDK_HOME=$ANDROID_HOME/ndk/25.2.9519653" >> $GITHUB_ENV
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -146,18 +145,55 @@ jobs:
       - name: Initialize and Build Android Project
         env:
           NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
         run: |
+          echo "Current directory: $(pwd)"
+          echo "Listing directory contents:"
+          ls -la
+          
+          echo "Initializing Android project..."
           pnpm tauri android init
+          
+          echo "Checking Android project structure:"
+          ls -la src-tauri/gen/android/
+          
+          echo "Building APK..."
           pnpm tauri android build --apk
+          
+          echo "Checking APK build output:"
+          ls -la src-tauri/gen/android/app/build/outputs/apk/release/ || true
+          
+          echo "Building AAB..."
           pnpm tauri android build --aab
+          
+          echo "Checking AAB build output:"
+          ls -la src-tauri/gen/android/app/build/outputs/bundle/release/ || true
+
+      - name: Debug Android Build
+        if: failure()
+        run: |
+          echo "=== Debug Information ==="
+          echo "ANDROID_HOME: $ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
+          echo "NDK_HOME: $NDK_HOME"
+          echo "Java version:"
+          java -version
+          echo "Android SDK components:"
+          sdkmanager --list
+          echo "Project structure:"
+          find src-tauri/gen/android -type f -name "*.gradle" -o -name "*.xml" | xargs cat
+          echo "Gradle build output:"
+          cat src-tauri/gen/android/app/build/outputs/logs/*.log || true
 
       - name: Upload Android artifacts
         uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: android-artifacts
           path: |
-            src-tauri/gen/android/app/build/outputs/apk/release/*.apk
-            src-tauri/gen/android/app/build/outputs/bundle/release/*.aab
+            src-tauri/gen/android/app/build/outputs/apk/universal/release/*.apk
+            src-tauri/gen/android/app/build/outputs/bundle/universalRelease/*.aab
           retention-days: 5
 
       - name: Rename Android artifacts with timestamp
@@ -165,13 +201,13 @@ jobs:
         run: |
           TIMESTAMP=$(date +%Y%m%d%H%M%S)
           mkdir -p renamed_artifacts
-          for file in src-tauri/gen/android/app/build/outputs/apk/release/*.apk; do
+          for file in src-tauri/gen/android/app/build/outputs/apk/universal/release/*.apk; do
             filename=$(basename "$file")
             extension="${filename##*.}"
             newname="${filename%.*}_${TIMESTAMP}.${extension}"
             cp "$file" "renamed_artifacts/$newname"
           done
-          for file in src-tauri/gen/android/app/build/outputs/bundle/release/*.aab; do
+          for file in src-tauri/gen/android/app/build/outputs/bundle/universalRelease/*.aab; do
             filename=$(basename "$file")
             extension="${filename##*.}"
             newname="${filename%.*}_${TIMESTAMP}.${extension}"
