@@ -41,7 +41,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     // 更新检测相关状态
     const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
     const [checkingUpdate, setCheckingUpdate] = useState(false);
-    const currentVersion = "2.0.1";
+    const currentVersion = "2.0.2";
 
     // 提示词模板相关状态
     const [polishTemplate, setPolishTemplate] = useState("");

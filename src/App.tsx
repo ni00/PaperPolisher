@@ -3,7 +3,7 @@ import MainPage from './page/main-page'
 import { Toaster } from "@/components/ui/sonner"
 import { UpdateNotification } from './components/paper-polisher/UpdateNotification'
 
-const currentVersion = "2.0.1";
+const currentVersion = "2.0.2";
 
 function App() {
   return (
